@@ -1,0 +1,146 @@
+{
+  "typography": {
+    "headings": {
+      "family": "Outfit, sans-serif",
+      "weights": ["300", "500", "700", "800"],
+      "usage": "Use tight letter spacing (tracking-tight) for all headings above 32px. Never use generic fonts like Inter or Roboto for headings."
+    },
+    "body": {
+      "family": "IBM Plex Sans, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Loose line height (leading-relaxed) for readability. Crisp and professional."
+    },
+    "labels": {
+      "usage": "Uppercase, tiny text with wide spacing (tracking-[0.2em]) for overlines and tags."
+    },
+    "scale_limits": {
+      "H1": "text-4xl sm:text-5xl lg:text-6xl max",
+      "H2": "text-2xl sm:text-3xl lg:text-4xl",
+      "H3": "text-xl sm:text-2xl",
+      "H4": "text-lg sm:text-xl",
+      "Body": "text-base (mobile: text-sm)"
+    }
+  },
+  "colors": {
+    "archetype": "High-Contrast Professional / Earthy Trust Variant",
+    "palette": {
+      "primary": "#1a2f6b",
+      "primary_hover": "#111f4a",
+      "accent": "#3aa935",
+      "accent_hover": "#2d8a29",
+      "background_light": "#ffffff",
+      "surface_light": "#f8fafc",
+      "text_dark": "#0f172a",
+      "text_muted": "#475569",
+      "border": "#e2e8f0"
+    },
+    "rules": {
+      "gradients": "Do not use generic gradients. Use solid colors or very subtle mesh gradients if needed. Never use a gradient as a text background.",
+      "contrast": "Always ensure text meets APCA standards. When using primary (#1a2f6b) or accent (#3aa935) as background, use crisp white text. Do not use transparent backgrounds under text that rests over images.",
+      "hover_states": "ALWAYS explicitly set text color on hover. Focus states must have HIGHER contrast."
+    }
+  },
+  "visual_enhancers": {
+    "surfaces": {
+      "header": "Crystal Glass variant: backdrop-blur-xl bg-white/80 border-b border-[#1a2f6b]/10. Never fully transparent.",
+      "cards": "Grid Borders or Flat Solid surfaces. 1px subtle border with very soft shadows (shadow-sm). On hover, slight lift (-translate-y-1) and shadow-lg.",
+      "AI_widget": "Neumorphism or Glassmorphism to distinguish it as an interactive 'smart' tool.",
+      "borders": "Keep border radii crisp. Use rounded-md or rounded-none for a more structured, financial feel."
+    },
+    "decorations": "Subtle grain overlays to remove digital flatness. Use fine 1px structural lines to separate sections instead of massive background color blocks."
+  },
+  "component_name": {
+    "buttons": "Pill-shaped or sharp rectangular buttons. Primary action buttons should use the Vibrant Green (#3aa935) for high conversion. Secondary buttons use outline or Navy (#1a2f6b).",
+    "inputs": "Shadcn UI standard inputs but customized: 1px border, square or slightly rounded edges, focus ring using Navy (#1a2f6b).",
+    "forms": "Use Shadcn forms for reliable UX.",
+    "icons": "Use Phosphor Icons (@phosphor-icons/react) with Duotone weight to look high-end and professional."
+  },
+  "grids": {
+    "general_spacing": "Generous Spacing Philosophy. Use p-8, p-12, p-16, p-24.",
+    "services_grid": "MODE A: The 'Tetris' Grid. Asymmetric. Example: Base grid-cols-1 md:grid-cols-4 lg:grid-cols-12 with wide gaps (gap-8). Spans mixing col-span-4 and col-span-8 to avoid boring equal squares.",
+    "technical_rules": "Grid items MUST be direct children of grid containers. Avoid wrappers that break grid-cols."
+  },
+  "layouts": {
+    "hero": "Asymmetric layout. Large typographic statement on the left, high-quality overlapping imagery or a curated bento cluster of images on the right.",
+    "about": "Editorial style. Large headings, wide margins.",
+    "navigation": "Visible desktop nav bar with Logo, links, and 'Get a Quote' CTA. Sticky with z-50.",
+    "footer": "Massive Space (py-20). Dark theme for footer (bg-[#1a2f6b] with white text) to provide strong contrast from the light body."
+  },
+  "motion": {
+    "general": "Smooth, professional, not bouncy. Use Framer Motion for staggered entrance animations on lists/grids.",
+    "interactions": "Hover states on all interactive elements. Buttons must have a transform scale or lift.",
+    "scroll": "Implement 'lenis' for smooth scrolling. This is MANDATORY for a premium feel."
+  },
+  "accessibility": {
+    "contrast": "Minimum 4.5:1 for normal text.",
+    "focus": "Clear focus rings on all inputs/buttons.",
+    "motion": "Respect prefers-reduced-motion.",
+    "testing": "All interactive elements MUST include data-testid attribute (e.g., data-testid='contact-submit-button')."
+  },
+  "media": {
+    "hero_overlay": "If placing text over hero image, max overlay opacity bg-black/40. If more is needed, use a gradient overlay, not flat.",
+    "image_constraints": "Mobile images must not exceed 80vh max height."
+  },
+  "3d_libraries": {
+    "recommendation": "Use Framer Motion for simple 2D interaction (like the Document Analyzer scanning effect). Complex 3D is not required unless building a highly interactive globe/map.",
+    "AI_Document_Analyzer": "Use Framer Motion to create a scanning line (The 'Tracing Beam' effect) over uploaded documents."
+  },
+  "image_urls": {
+    "hero_consulting": {
+      "url": "https://images.unsplash.com/photo-1758518730037-a16581a040e8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwzfHxmaW5hbmNlJTIwY29uc3VsdGluZyUyMG1vZGVybnxlbnwwfHx8fDE3ODczNzIwMTd8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Business professionals in a meeting around a table",
+      "category": "Hero Section / About Us"
+    },
+    "business_solutions": {
+      "url": "https://images.pexels.com/photos/5816284/pexels-photo-5816284.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Business professionals reviewing financial reports on a smartphone at a desk",
+      "category": "Services Grid - Business Solutions"
+    },
+    "life_term_insurance": {
+      "url": "https://images.unsplash.com/photo-1648221350871-e3ae3c8d0f58?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwzfHxmYW1pbHklMjBwcm90ZWN0aW9ufGVufDB8fHx8MTc4NzM3MjAxN3ww&ixlib=rb-4.1.0&q=85",
+      "description": "Family standing in a field at sunset",
+      "category": "Services Grid - Term/Life Insurance"
+    },
+    "motor_insurance": {
+      "url": "https://images.pexels.com/photos/2920064/pexels-photo-2920064.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Black SUV driving on a misty forest road",
+      "category": "Services Grid - Motor Insurance"
+    },
+    "health_insurance": {
+      "url": "https://images.pexels.com/photos/5998442/pexels-photo-5998442.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Female doctor with a stethoscope writing notes at a desk indoors",
+      "category": "Services Grid - Health Insurance"
+    }
+  },
+  "component_path": {
+    "shadcn": "/app/frontend/src/components/ui/",
+    "custom": "/app/frontend/src/components/"
+  },
+  "instructions_to_main_agent": [
+    "Install required dependencies: yarn add @phosphor-icons/react framer-motion lenis sonner react-fast-marquee clsx tailwind-merge",
+    "Set up standard Shadcn components for forms, inputs, selects, dialogs. Do NOT build these from scratch.",
+    "Implement the landing page in pure HTML/Tailwind CSS without Shadcn structural cards to allow asymmetric E1 layouts.",
+    "The branding colors MUST be exactly Navy Blue (#1a2f6b) and Vibrant Green (#3aa935). Do not deviate.",
+    "For the AI Document Analyzer feature, create an interactive UI where users can upload a file, and display a Framer Motion 'scanning' line over the document preview while processing.",
+    "Ensure the floating WhatsApp widget and AI Chatbot widget are clearly visible but do not obstruct main content. Use the Green (#3aa935) for WhatsApp.",
+    "Do NOT center align everything. Use left alignment for readability.",
+    "Create a clean Admin panel using Shadcn tables to display captured leads."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic outputs. Avoid 'AI slop' aesthetics. Be creative and distinctive.",
+    "Do not use generic centered layouts or simplistic gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transitions (e.g., transition: all). Add transitions for specific properties.",
+    "You MUST NOT center align the app container (.App { text-align: center; }). It disrupts reading flow.",
+    "Always use modern button styles with interaction animations.",
+    "NEVER use AI assistant Emoji characters (like \ud83e\udd16\ud83e\udde0\ud83d\udcad\ud83d\udca1\ud83d\udd2e\ud83c\udfaf) for icons. Use Phosphor Icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Subtle grain textures, custom cursors, and loading animations separate good from extraordinary.",
+    "Main agent relies on provided image URLs. NEVER use placeholder text/URLs.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Use sonner for toasts, located in /app/src/components/ui/sonner.tsx.",
+    "All interactive and key informational elements MUST include a data-testid attribute."
+  ]
+}
