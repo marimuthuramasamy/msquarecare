@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { LockKey, DownloadSimple, ArrowLeft, MagnifyingGlass, Users } from "@phosphor-icons/react";
+import { LockKey, DownloadSimple, ArrowLeft, MagnifyingGlass, Users, GoogleLogo, CheckCircle, LinkSimpleBreak, ArrowSquareOut } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,6 +29,16 @@ export default function AdminPage() {
   const [leads, setLeads] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [integ, setInteg] = useState(null);
+
+  const loadInteg = useCallback(async (code) => {
+    try {
+      const res = await axios.get(`${API}/integrations/status`, { headers: { "X-Admin-Passcode": code } });
+      setInteg(res.data);
+    } catch (e) {
+      /* ignore */
+    }
+  }, []);
 
   const load = useCallback(async (code) => {
     setLoading(true);
@@ -38,6 +48,7 @@ export default function AdminPage() {
       setAuthed(true);
       sessionStorage.setItem("msq_admin", code);
       setPasscode(code);
+      loadInteg(code);
     } catch (e) {
       toast.error("Invalid passcode.");
       setAuthed(false);
@@ -45,11 +56,29 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadInteg]);
 
   useEffect(() => {
     if (passcode) load(passcode);
+    const p = new URLSearchParams(window.location.search).get("google");
+    if (p === "connected") {
+      toast.success("Google connected! Leads now sync to your Sheet with email alerts.");
+      window.history.replaceState({}, "", "/admin");
+    } else if (p === "error") {
+      toast.error("Google connection failed. Please try again.");
+      window.history.replaceState({}, "", "/admin");
+    }
   }, []); // eslint-disable-line
+
+  const disconnectGoogle = async () => {
+    try {
+      await axios.post(`${API}/integrations/disconnect`, {}, { headers: { "X-Admin-Passcode": passcode } });
+      toast.success("Google disconnected.");
+      loadInteg(passcode);
+    } catch (e) {
+      toast.error("Could not disconnect.");
+    }
+  };
 
   const filtered = leads.filter((l) =>
     [l.name, l.phone, l.email, l.service, l.city].join(" ").toLowerCase().includes(query.toLowerCase())
@@ -118,9 +147,69 @@ export default function AdminPage() {
           </a>
         </div>
 
+        {/* Google Sheets + alerts integration */}
+        <div className="mt-6 rounded-xl bg-white border border-navy/10 shadow-sm p-5" data-testid="admin-integrations">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="h-11 w-11 rounded-lg bg-navy/5 flex items-center justify-center">
+                <GoogleLogo size={22} weight="bold" className="text-navy" />
+              </span>
+              <div>
+                <div className="font-display font-semibold text-navy">Google Sheets sync & email alerts</div>
+                {!integ && <div className="text-sm text-slate-400">Checking status…</div>}
+                {integ && !integ.configured && (
+                  <div className="text-sm text-slate-500">
+                    Add <code className="bg-slate-100 px-1 rounded">GOOGLE_CLIENT_ID</code> &{" "}
+                    <code className="bg-slate-100 px-1 rounded">GOOGLE_CLIENT_SECRET</code> to enable.
+                  </div>
+                )}
+                {integ && integ.configured && !integ.connected && (
+                  <div className="text-sm text-slate-500">Connect your Google account to auto-sync leads & get instant email alerts.</div>
+                )}
+                {integ && integ.connected && (
+                  <div className="text-sm text-brand-greenDark flex items-center gap-1.5">
+                    <CheckCircle size={16} weight="fill" /> Connected {integ.email ? `as ${integ.email}` : ""}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {integ && integ.connected && integ.sheet_url && (
+                <a
+                  href={integ.sheet_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-testid="integ-open-sheet"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy hover:underline"
+                >
+                  <ArrowSquareOut size={16} weight="bold" /> Open Sheet
+                </a>
+              )}
+              {integ && integ.configured && !integ.connected && (
+                <a
+                  href={`${API}/oauth/sheets/login?passcode=${encodeURIComponent(passcode)}`}
+                  data-testid="integ-connect-btn"
+                  className="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-navy-dark transition-colors duration-200"
+                >
+                  <GoogleLogo size={18} weight="bold" /> Connect Google
+                </a>
+              )}
+              {integ && integ.connected && (
+                <button
+                  onClick={disconnectGoogle}
+                  data-testid="integ-disconnect-btn"
+                  className="inline-flex items-center gap-2 rounded-full border border-navy/20 px-4 py-2.5 text-sm font-semibold text-navy hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors duration-200"
+                >
+                  <LinkSimpleBreak size={16} weight="bold" /> Disconnect
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="mt-6 relative max-w-md">
-          <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
+          <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, phone, service…"

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, Header, Depends
-from fastapi.responses import StreamingResponse, PlainTextResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse, RedirectResponse
+import asyncio
+import secrets
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -17,6 +19,8 @@ from datetime import datetime, timezone
 from PIL import Image
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent, TextDelta, StreamDone
+
+import google_sync
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -109,7 +113,7 @@ def require_admin(x_admin_passcode: Optional[str] = Header(None)):
 SYSTEM_PROMPT = (
     "You are 'MSquare Assist', the friendly AI advisor for MSquare Care Solutions, "
     "a trusted insurance and business consultancy based in Trichy, Tamil Nadu, India. "
-    "Founder/consultant: Marimuthu R. We help with Health Insurance, Motor Insurance, "
+    "We help with Health Insurance, Motor Insurance, "
     "General Insurance, Term/Life Insurance, Business Solutions, Loans & Finance and AI Automations. "
     "Answer clearly and concisely in simple language (English or Tamil if asked). "
     "Guide users to get a free quote and, for detailed needs, suggest they contact us on "
@@ -132,9 +136,51 @@ async def get_config():
 @api_router.post("/leads", response_model=Lead)
 async def create_lead(payload: LeadCreate):
     lead = Lead(**payload.model_dump())
-    await db.leads.insert_one(lead.to_mongo())
+    doc = lead.to_mongo()
+    await db.leads.insert_one(doc)
     logger.info(f"New lead captured: {lead.name} / {lead.service}")
+    asyncio.create_task(google_sync.sync_lead(db, doc))
     return lead
+
+
+# ---------- Google Sheets + Gmail alert integration ----------
+@api_router.get("/integrations/status")
+async def integration_status(_: bool = Depends(require_admin)):
+    return await google_sync.status(db)
+
+
+@api_router.get("/oauth/sheets/login")
+async def sheets_login(passcode: str):
+    if passcode != ADMIN_PASSCODE:
+        raise HTTPException(status_code=401, detail="Invalid admin passcode")
+    if not google_sync.is_configured():
+        raise HTTPException(status_code=400, detail="Google integration not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.")
+    state = secrets.token_urlsafe(24)
+    await db.oauth_states.insert_one({"state": state, "ts": datetime.now(timezone.utc).isoformat()})
+    return RedirectResponse(google_sync.build_auth_url(state))
+
+
+@api_router.get("/oauth/sheets/callback")
+async def sheets_callback(code: str = "", state: str = "", error: str = ""):
+    base = os.environ.get("APP_BASE_URL", "")
+    if error or not code:
+        return RedirectResponse(f"{base}/admin?google=error")
+    st = await db.oauth_states.find_one({"state": state})
+    if not st:
+        return RedirectResponse(f"{base}/admin?google=error")
+    await db.oauth_states.delete_one({"state": state})
+    try:
+        await google_sync.exchange_code(db, code)
+    except Exception as e:
+        logger.error(f"OAuth exchange failed: {e}")
+        return RedirectResponse(f"{base}/admin?google=error")
+    return RedirectResponse(f"{base}/admin?google=connected")
+
+
+@api_router.post("/integrations/disconnect")
+async def integration_disconnect(_: bool = Depends(require_admin)):
+    await google_sync.disconnect(db)
+    return {"ok": True}
 
 
 @api_router.get("/admin/leads", response_model=List[Lead])

@@ -29,8 +29,8 @@ export default function About() {
             />
           </div>
           <div className="absolute -bottom-6 right-6 bg-navy text-white rounded-xl p-5 shadow-xl max-w-[220px]">
-            <div className="font-display text-lg font-bold">Marimuthu R</div>
-            <div className="text-xs text-white/70">Business Consultant · Founder</div>
+            <div className="font-display text-lg font-bold">MSquare Care</div>
+            <div className="text-xs text-white/70">Insurance & Business Consultants</div>
             <a href={`tel:${PHONE}`} className="mt-3 inline-flex items-center gap-2 text-sm text-brand-green font-semibold" data-testid="about-call-link">
               <Phone size={16} weight="fill" /> {PHONE}
             </a>

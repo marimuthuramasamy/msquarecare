@@ -116,7 +116,7 @@ export default function Hero() {
             </div>
             <div>
               <div className="text-sm font-semibold text-navy">Trusted advisory</div>
-              <div className="text-xs text-slate-500">Marimuthu R · Business Consultant</div>
+              <div className="text-xs text-slate-500">Insurance & finance experts</div>
             </div>
           </motion.div>
         </div>
