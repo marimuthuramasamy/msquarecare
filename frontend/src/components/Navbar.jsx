@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { List, X } from "@phosphor-icons/react";
-import { LogoWordmark } from "./Logo";
+import { BrandHeader } from "./Logo";
 
 const links = [
   { label: "Services", href: "#services" },
@@ -31,7 +31,7 @@ export default function Navbar() {
       data-testid="navbar"
     >
       <nav className="mx-auto max-w-7xl px-5 lg:px-8 h-16 flex items-center justify-between">
-        <a href="#top" data-testid="nav-logo-link"><LogoWordmark /></a>
+        <a href="#top" data-testid="nav-logo-link"><BrandHeader /></a>
 
         <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
