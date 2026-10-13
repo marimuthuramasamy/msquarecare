@@ -5,6 +5,7 @@ import { GoogleLogo, CheckCircle, LinkSimpleBreak, ArrowSquareOut, DownloadSimpl
 import { API } from "@/lib/config";
 import { crm, errMsg, downloadCsv, getToken } from "../api";
 import { useAuth } from "../AuthContext";
+import ReminderSettings from "../ReminderSettings";
 import { Btn, Card, Field, Input, Modal, PageHeader, Pill, Select, Table, Td } from "../ui";
 
 function TeamCard() {
@@ -162,6 +163,7 @@ export default function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
           {user.role === "admin" && <TeamCard />}
+          {user.role === "admin" && <ReminderSettings />}
           {user.role === "admin" && <GoogleCard />}
           <Card className="p-5">
             <h2 className="font-display font-semibold text-navy mb-1">Data export</h2>

@@ -156,7 +156,7 @@ export default function CustomerDetail() {
             <dl className="space-y-2 text-sm">
               {[["Date of birth", fmtDate(c.dob)], ["PAN", c.pan], ["Address", c.address],
                 ["Relationship manager", c.assigned_to ? userName(c.assigned_to) : null], ["Source", c.source],
-                ["Customer since", fmtDate(c.created_at)], ["Notes", c.notes]].map(([k, v]) => (
+                ["Customer since", fmtDate(c.created_at)], ["WhatsApp reminders", c.whatsapp_opt_out ? "Opted out" : "On"], ["Notes", c.notes]].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4"><dt className="text-slate-500 shrink-0">{k}</dt><dd className="text-right text-slate-800 break-words whitespace-pre-wrap">{v && v !== "—" ? v : "—"}</dd></div>
               ))}
             </dl>

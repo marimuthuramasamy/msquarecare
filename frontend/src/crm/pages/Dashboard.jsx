@@ -61,7 +61,7 @@ export default function Dashboard() {
         <Stat label="Commission (active book)" value={inr(d.commission_active, true)} sub="Estimated on active policies" icon={ShieldCheck} />
         <Stat label="Leads this month" value={d.leads_new_this_month} sub={`${d.leads_total} total · ${d.conversion_rate}% won`} icon={Funnel} onClick={() => nav("/crm/leads")} />
         <Stat label="Customers" value={d.customers_total} icon={AddressBook} onClick={() => nav("/crm/customers")} />
-        <Stat label="Renewals due (30d)" value={d.renewals_due_30} sub={d.renewals_overdue ? `${d.renewals_overdue} overdue` : "None overdue"} icon={ArrowsClockwise} tone={d.renewals_overdue ? "red" : "navy"} onClick={() => nav("/crm/renewals")} />
+        <Stat label="Renewals due (30d)" value={d.renewals_due_30} sub={[d.renewals_overdue ? `${d.renewals_overdue} overdue` : "None overdue", d.reminders_pending ? `${d.reminders_pending} WhatsApp to send` : null].filter(Boolean).join(" · ")} icon={ArrowsClockwise} tone={d.renewals_overdue ? "red" : "navy"} onClick={() => nav("/crm/renewals")} />
         <Stat label="Open claims" value={d.claims_open} sub={`${inr(d.claims_open_amount, true)} claimed`} icon={FirstAid} onClick={() => nav("/crm/claims")} />
         <Stat label="Open tasks" value={d.tasks_open} sub={d.tasks_overdue ? `${d.tasks_overdue} overdue` : "All on track"} icon={CheckSquare} tone={d.tasks_overdue ? "red" : "navy"} onClick={() => nav("/crm/tasks")} />
         <Stat label="Lead conversion" value={`${d.conversion_rate}%`} sub="Won ÷ (won + lost)" icon={Funnel} />

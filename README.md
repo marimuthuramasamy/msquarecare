@@ -37,9 +37,28 @@ On first start the backend creates an admin user if none exists:
 
 Change the password after first login (Settings). Also set a strong `JWT_SECRET` in `backend/.env`.
 
+### Automatic WhatsApp renewal reminders
+Settings → *Automatic WhatsApp renewal reminders*. Once switched on, the backend checks every 15 minutes and,
+after the chosen hour (IST), sends one reminder per policy per schedule step (default 30, 15, 7 and 1 day before
+expiry, and 3 days after). Renewed or cancelled policies stop automatically; customers can be opted out on their
+profile. Every reminder is logged under Renewals → *WhatsApp reminders*.
+
+- **Without WhatsApp API (default):** reminders are queued with the message pre-written; staff click *Open*
+  (opens WhatsApp with the text filled in) and then *Mark sent*.
+- **Fully automatic:** needs a WhatsApp Business Cloud API number from Meta (business.facebook.com → WhatsApp).
+  1. Create a *Utility* message template named `policy_renewal_reminder` (language `en`) with this body:
+     `Hi {{1}}, your {{2}} with {{3}} is due for renewal on {{4}}. Renewal premium is approx. {{5}}. Reply YES and MSquare Care will renew it for you, or call 8072571879.`
+  2. Once Meta approves it, add to `backend/.env`:
+     `WHATSAPP_TOKEN=<permanent system-user token>` and `WHATSAPP_PHONE_NUMBER_ID=<phone number id>`
+     (optional: `WHATSAPP_TEMPLATE_NAME`, `WHATSAPP_TEMPLATE_LANG`, `WHATSAPP_API_VERSION`).
+  3. Restart the backend and choose *Send automatically (API)* in Settings. Failed sends are retried up to 3 times.
+
+  Meta only allows approved templates for business-initiated messages, so the editable message text in Settings
+  is used for the one-click mode; in API mode the approved template's wording is what customers receive.
+
 ### Demo data
 `cd backend && python seed_demo.py` fills an empty database with sample leads, customers, policies and claims
 (adds agent `agent@msquarecare.com` / `agent123`). `--wipe` resets CRM data first — never run that on production.
 
 ### Tests
-`cd backend && python -m pytest tests/test_crm.py -n 0` — runs against an in-memory MongoDB, no server needed.
+`cd backend && python -m pytest tests/test_crm.py tests/test_reminders.py -n 0` — runs against an in-memory MongoDB, no server needed.

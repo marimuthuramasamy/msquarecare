@@ -418,6 +418,7 @@ class CustomerIn(BaseModel):
     pan: Optional[str] = None
     notes: Optional[str] = None
     assigned_to: Optional[str] = None
+    whatsapp_opt_out: bool = False
 
 
 class CustomerPatch(BaseModel):
@@ -430,6 +431,7 @@ class CustomerPatch(BaseModel):
     pan: Optional[str] = None
     notes: Optional[str] = None
     assigned_to: Optional[str] = None
+    whatsapp_opt_out: Optional[bool] = None
 
 
 @router.get("/customers")
@@ -696,6 +698,9 @@ async def renew_policy(pid: str, body: RenewIn = RenewIn(), user: dict = Depends
     # close open renewal tasks for this policy
     await db().tasks.update_many({"policy_id": pid, "status": "open", "kind": "renewal"},
                                  {"$set": {"status": "done", "completed_at": now_iso()}})
+    # queued reminders for the old term are no longer relevant
+    await db().reminders.update_many({"policy_id": pid, "status": {"$in": ["pending", "failed"]}},
+                                     {"$set": {"status": "skipped", "error": "Policy renewed", "updated_at": now_iso()}})
     await log_activity("policy", pid, "system", f"Renewed → new term {new['start_date']} to {new['end_date']}", user)
     await log_activity("policy", new["id"], "system", f"Created as renewal of {old['policy_number']}", user)
     return _with_days(_clean(new))
@@ -974,6 +979,7 @@ async def dashboard(user: dict = Depends(current_user)):
         "claims_open_amount": round(sum(float(c.get("claimed_amount") or 0) for c in open_claims), 2),
         "tasks_open": len(tasks_open),
         "tasks_overdue": sum(1 for x in tasks_open if (x.get("due_date") or "9999") < t.isoformat()),
+        "reminders_pending": await d.reminders.count_documents({"status": "pending"}),
         "my_tasks_today": sum(1 for x in my_tasks if (x.get("due_date") or "9999") <= t.isoformat()),
     }
 

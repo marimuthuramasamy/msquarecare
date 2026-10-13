@@ -22,6 +22,7 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent, Te
 
 import google_sync
 import crm
+import reminders
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -328,11 +329,14 @@ async def chat_stream(req: ChatRequest):
 app.include_router(api_router)
 app.include_router(crm.router)
 app.include_router(crm.portal_router)
+app.include_router(reminders.router)
 
 
 @app.on_event("startup")
 async def startup_crm():
     await crm.bootstrap(db)
+    # keep a reference so the task isn't garbage-collected
+    app.state.reminder_task = asyncio.create_task(reminders.scheduler_loop())
 
 app.add_middleware(
     CORSMiddleware,

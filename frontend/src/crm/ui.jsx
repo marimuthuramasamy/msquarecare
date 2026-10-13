@@ -8,6 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import {
   ChatCircleText, Phone, WhatsappLogo, EnvelopeSimple, UsersThree, Gear,
 } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import { crm, errMsg } from "./api";
 import { fmtDateTime, label } from "./utils";
 
@@ -32,7 +33,7 @@ export const Btn = ({ variant = "primary", className = "", children, ...props })
   return (
     <button
       type="button"
-      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none ${styles[variant]} ${className}`}
+      className={cn("inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none", styles[variant], className)}
       {...props}
     >
       {children}
@@ -56,7 +57,7 @@ export const Select = ({ value, onChange, options, placeholder, className = "", 
   <select
     value={value ?? ""}
     onChange={(e) => onChange(e.target.value)}
-    className={`h-9 w-full rounded-md border border-input bg-white px-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring ${className}`}
+    className={cn("h-9 w-full rounded-md border border-input bg-white px-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring", className)}
     {...props}
   >
     {placeholder !== undefined && <option value="">{placeholder}</option>}

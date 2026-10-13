@@ -99,12 +99,12 @@ export function LeadForm({ open, onOpenChange, lead, onSaved }) {
 /* ---------------- Customer ---------------- */
 export function CustomerForm({ open, onOpenChange, customer, onSaved }) {
   const { user } = useAuth();
-  const init = customer || { name: "", phone: "", email: "", city: "", address: "", dob: "", pan: "", notes: "", assigned_to: user?.id || "" };
+  const init = customer || { name: "", phone: "", email: "", city: "", address: "", dob: "", pan: "", notes: "", assigned_to: user?.id || "", whatsapp_opt_out: false };
   const { f, set, busy, run } = useForm(init, open);
   const submit = async (e) => {
     e.preventDefault();
-    const body = clean({ name: f.name, phone: f.phone, email: f.email, city: f.city, address: f.address,
-      dob: f.dob, pan: f.pan, notes: f.notes, assigned_to: f.assigned_to });
+    const body = { ...clean({ name: f.name, phone: f.phone, email: f.email, city: f.city, address: f.address,
+      dob: f.dob, pan: f.pan, notes: f.notes, assigned_to: f.assigned_to }), whatsapp_opt_out: !!f.whatsapp_opt_out };
     const r = await run(() => (customer ? crm.patch(`/customers/${customer.id}`, body) : crm.post("/customers", body)),
       customer ? "Customer updated" : "Customer added");
     if (r) { onSaved?.(r.data); onOpenChange(false); }
@@ -120,6 +120,10 @@ export function CustomerForm({ open, onOpenChange, customer, onSaved }) {
         <Field label="PAN"><Input value={f.pan || ""} onChange={set("pan")} className="uppercase" maxLength={10} /></Field>
         <Field label="Address" className="sm:col-span-2"><Textarea value={f.address || ""} onChange={set("address")} className="min-h-[60px]" /></Field>
         <Field label="Relationship manager"><UserSelect value={f.assigned_to} onChange={set("assigned_to")} /></Field>
+        <label className="flex items-center gap-2 text-sm text-slate-700 sm:mt-5">
+          <input type="checkbox" className="accent-navy" checked={!!f.whatsapp_opt_out} onChange={(e) => set("whatsapp_opt_out")(e.target.checked)} />
+          Don't send automatic WhatsApp reminders
+        </label>
         <Field label="Notes" className="sm:col-span-2"><Textarea value={f.notes || ""} onChange={set("notes")} className="min-h-[60px]" /></Field>
         <div className="sm:col-span-2"><Actions busy={busy} onCancel={() => onOpenChange(false)} /></div>
       </form>
