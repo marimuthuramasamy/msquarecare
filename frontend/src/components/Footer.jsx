@@ -48,7 +48,10 @@ export default function Footer() {
 
         <div className="mt-12 pt-6 border-t border-navy/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
           <span>© {new Date().getFullYear()} MSquare Care Solutions. All rights reserved.</span>
-          <a href="/admin" data-testid="footer-admin-link" className="hover:text-navy transition-colors duration-200">Admin</a>
+          <div className="flex items-center gap-5">
+            <a href="/my-policy" data-testid="footer-portal-link" className="hover:text-navy transition-colors duration-200">My Policy</a>
+            <a href="/crm" data-testid="footer-admin-link" className="hover:text-navy transition-colors duration-200">Staff login</a>
+          </div>
         </div>
       </div>
     </footer>
