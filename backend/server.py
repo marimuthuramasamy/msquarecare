@@ -21,6 +21,8 @@ from PIL import Image
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent, TextDelta, StreamDone
 
 import google_sync
+import crm
+import reminders
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -28,6 +30,7 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+crm.init(db)
 
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 ADMIN_PASSCODE = os.environ['ADMIN_PASSCODE']
@@ -104,10 +107,19 @@ class ChatRequest(BaseModel):
 
 
 # ---------- Auth dependency ----------
-def require_admin(x_admin_passcode: Optional[str] = Header(None)):
-    if x_admin_passcode != ADMIN_PASSCODE:
-        raise HTTPException(status_code=401, detail="Invalid admin passcode")
-    return True
+async def _is_admin_token(token: Optional[str]) -> bool:
+    u = await crm.user_from_token(token)
+    return bool(u and u.get("role") == "admin")
+
+
+async def require_admin(x_admin_passcode: Optional[str] = Header(None),
+                        authorization: Optional[str] = Header(None)):
+    """Accepts the legacy admin passcode or a CRM admin bearer token."""
+    if x_admin_passcode and x_admin_passcode == ADMIN_PASSCODE:
+        return True
+    if authorization and authorization.lower().startswith("bearer ") and await _is_admin_token(authorization[7:]):
+        return True
+    raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
 
 SYSTEM_PROMPT = (
@@ -138,6 +150,7 @@ async def create_lead(payload: LeadCreate):
     lead = Lead(**payload.model_dump())
     doc = lead.to_mongo()
     await db.leads.insert_one(doc)
+    await crm.log_activity("lead", lead.lead_id, "system", f"Enquiry received via {lead.source}")
     logger.info(f"New lead captured: {lead.name} / {lead.service}")
     asyncio.create_task(google_sync.sync_lead(db, doc))
     return lead
@@ -150,8 +163,8 @@ async def integration_status(_: bool = Depends(require_admin)):
 
 
 @api_router.get("/oauth/sheets/login")
-async def sheets_login(passcode: str):
-    if passcode != ADMIN_PASSCODE:
+async def sheets_login(passcode: str = "", token: str = ""):
+    if passcode != ADMIN_PASSCODE and not await _is_admin_token(token):
         raise HTTPException(status_code=401, detail="Invalid admin passcode")
     if not google_sync.is_configured():
         raise HTTPException(status_code=400, detail="Google integration not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.")
@@ -164,17 +177,17 @@ async def sheets_login(passcode: str):
 async def sheets_callback(code: str = "", state: str = "", error: str = ""):
     base = os.environ.get("APP_BASE_URL", "")
     if error or not code:
-        return RedirectResponse(f"{base}/admin?google=error")
+        return RedirectResponse(f"{base}/crm/settings?google=error")
     st = await db.oauth_states.find_one({"state": state})
     if not st:
-        return RedirectResponse(f"{base}/admin?google=error")
+        return RedirectResponse(f"{base}/crm/settings?google=error")
     await db.oauth_states.delete_one({"state": state})
     try:
         await google_sync.exchange_code(db, code)
     except Exception as e:
         logger.error(f"OAuth exchange failed: {e}")
-        return RedirectResponse(f"{base}/admin?google=error")
-    return RedirectResponse(f"{base}/admin?google=connected")
+        return RedirectResponse(f"{base}/crm/settings?google=error")
+    return RedirectResponse(f"{base}/crm/settings?google=connected")
 
 
 @api_router.post("/integrations/disconnect")
@@ -314,6 +327,16 @@ async def chat_stream(req: ChatRequest):
 
 
 app.include_router(api_router)
+app.include_router(crm.router)
+app.include_router(crm.portal_router)
+app.include_router(reminders.router)
+
+
+@app.on_event("startup")
+async def startup_crm():
+    await crm.bootstrap(db)
+    # keep a reference so the task isn't garbage-collected
+    app.state.reminder_task = asyncio.create_task(reminders.scheduler_loop())
 
 app.add_middleware(
     CORSMiddleware,

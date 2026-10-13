@@ -38,3 +38,11 @@ Tagline: "One Square. Every Solution." Consultant: Marimuthu R. Phone 8072571879
 
 ## Notes / Mocked
 - Google Sheets storage is NOT yet wired — leads live in MongoDB + admin panel + CSV export until owner provides Google service-account credentials.
+
+## Insurance CRM (2026-10-13)
+- Backend `backend/crm.py` (routers `/api/crm/*` with JWT auth, `/api/portal/*` public). Users with admin/agent roles; bootstrap admin from env.
+- Entities: leads (pipeline stages, owner, follow-up, expected premium), customers, policies (commission, renewal), claims (status history), tasks, activities timeline.
+- Frontend `/crm` (dashboard, leads kanban, customers 360, policies, renewals, claims, tasks, settings) and `/my-policy` customer portal. `/admin` redirects to `/crm`.
+- Legacy `/api/admin/*` passcode endpoints still work; integrations endpoints accept the passcode or an admin bearer token.
+- Tests: `backend/tests/test_crm.py` (mongomock). Demo data: `backend/seed_demo.py`.
+- WhatsApp renewal reminders (`backend/reminders.py`, `/api/crm/reminders/*`): scheduler started on app startup; stages per policy deduped via unique `reminders.key`; modes `manual` (queued wa.me links) or `api` (Meta Cloud API template). Tests: `backend/tests/test_reminders.py`.
