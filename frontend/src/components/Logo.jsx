@@ -1,12 +1,21 @@
 import React from "react";
 
-const LOGO = `${process.env.PUBLIC_URL || ""}/logo.png`;
-const LOGO_ICON = `${process.env.PUBLIC_URL || ""}/logo_icon.png`;
+const BASE = process.env.PUBLIC_URL || "";
+
+// Small, optimised renditions (WebP with PNG fallback) of the original logo files.
+const Img = ({ name, ...props }) => (
+  <picture>
+    <source srcSet={`${BASE}/${name}.webp`} type="image/webp" />
+    <img src={`${BASE}/${name}.small.png`} decoding="async" {...props} />
+  </picture>
+);
 
 // Full exact logo image (mark + wordmark + tagline). Best on light backgrounds.
 export const LogoWordmark = ({ className = "" }) => (
-  <img
-    src={LOGO}
+  <Img
+    name="logo"
+    width="230"
+    height="160"
     alt="MSquare Care Solutions"
     data-testid="brand-logo"
     className={`h-14 w-auto object-contain select-none ${className}`}
@@ -17,7 +26,7 @@ export const LogoWordmark = ({ className = "" }) => (
 // Header lockup: icon mark from the logo + crisp company name text.
 export const BrandHeader = ({ className = "" }) => (
   <div className={`flex items-center gap-2.5 ${className}`} data-testid="brand-header">
-    <img src={LOGO_ICON} alt="" className="h-10 w-auto object-contain select-none" draggable="false" />
+    <Img name="logo_icon" width="47" height="40" alt="" className="h-10 w-auto object-contain select-none" draggable="false" />
     <div className="leading-none">
       <div className="font-display font-extrabold text-[19px] sm:text-[21px] tracking-tight">
         <span className="text-navy">MSquare</span>
@@ -31,5 +40,5 @@ export const BrandHeader = ({ className = "" }) => (
 );
 
 export const LogoMark = ({ className = "" }) => (
-  <img src={LOGO_ICON} alt="MSquare Care Solutions" className={`h-10 w-auto object-contain ${className}`} draggable="false" />
+  <Img name="logo_icon" width="47" height="40" alt="MSquare Care Solutions" className={`h-10 w-auto object-contain ${className}`} draggable="false" />
 );

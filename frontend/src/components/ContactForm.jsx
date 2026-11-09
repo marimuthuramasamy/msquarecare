@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { PaperPlaneRight, WhatsappLogo, EnvelopeSimple, MapPin, Phone, CheckCircle } from "@phosphor-icons/react";
@@ -21,6 +21,16 @@ export default function ContactForm() {
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Cover Compass pre-selects the service the visitor was guided to
+  useEffect(() => {
+    const onPrefill = (e) => {
+      const svc = e.detail?.service;
+      if (svc && SERVICES.includes(svc)) setForm((f) => ({ ...f, service: svc }));
+    };
+    window.addEventListener("msq:prefill", onPrefill);
+    return () => window.removeEventListener("msq:prefill", onPrefill);
+  }, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e?.target ? e.target.value : e }));
 
