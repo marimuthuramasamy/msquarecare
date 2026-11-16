@@ -40,7 +40,25 @@ export const waNumber = (phone) => {
   return d.length === 10 ? `91${d}` : d;
 };
 
-export const waTo = (phone, text) => `https://wa.me/${waNumber(phone)}?text=${encodeURIComponent(text || "")}`;
+export const hasWhatsApp = (phone) => waNumber(phone).length >= 11;
+
+// Phones open the WhatsApp app; computers open WhatsApp Web (which does not work in phone browsers).
+export const isMobile = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+
+// Opens a chat with the message typed in; the user reviews and presses send. Nothing is sent automatically.
+export const waTo = (phone, text) => {
+  const q = `phone=${waNumber(phone)}&text=${encodeURIComponent(text || "")}`;
+  return isMobile() ? `https://api.whatsapp.com/send?${q}` : `https://web.whatsapp.com/send?${q}`;
+};
+
+// One named tab for all chats, so WhatsApp Web is reused instead of opening a new tab every time.
+export const WA_TARGET = "msq-whatsapp";
+
+export const openWhatsApp = (phone, text) => {
+  const w = window.open(waTo(phone, text), WA_TARGET);
+  if (w) w.focus();
+  return !!w;
+};
 
 export const label = (s) => (s || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 

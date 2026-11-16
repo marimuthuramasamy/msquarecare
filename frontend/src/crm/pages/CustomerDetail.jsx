@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ArrowLeft, Phone, WhatsappLogo, EnvelopeSimple, PencilSimple, Trash, CheckCircle, Circle, NotePencil, Star,
+  ArrowLeft, Phone, EnvelopeSimple, PencilSimple, Trash, CheckCircle, Circle, NotePencil, Star,
 } from "@phosphor-icons/react";
 import { crm, errMsg } from "../api";
 import { useAuth } from "../AuthContext";
@@ -11,7 +11,8 @@ import { ClaimForm, CustomerForm, PolicyForm, RenewForm, TaskForm } from "../for
 import {
   ActivityComposer, Btn, Card, ExpiryBadge, PageHeader, Pill, StatusBadge, Table, Td, Timeline,
 } from "../ui";
-import { fmtDate, inr, label, waTo } from "../utils";
+import { fmtDate, inr, label } from "../utils";
+import { WhatsAppButton } from "../WhatsApp";
 
 const diaryDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
@@ -104,7 +105,7 @@ export default function CustomerDetail() {
         actions={
           <>
             <a href={`tel:${c.phone}`}><Btn variant="outline"><Phone size={16} /> Call</Btn></a>
-            <a href={waTo(c.phone, `Hi ${c.name}, this is MSquare Care Solutions.`)} target="_blank" rel="noreferrer"><Btn variant="outline"><WhatsappLogo size={16} /> WhatsApp</Btn></a>
+            <WhatsAppButton person={{ type: "customer", id: c.id, name: c.name, phone: c.phone }} policies={policies} claims={claims} onSent={load} />
             {c.email && <a href={`mailto:${c.email}`}><Btn variant="outline"><EnvelopeSimple size={16} /> Email</Btn></a>}
             <Btn variant="outline" onClick={() => setEdit(true)}><PencilSimple size={16} /> Edit</Btn>
             {user?.role === "admin" && <Btn variant="danger" onClick={remove} title="Delete customer"><Trash size={16} /></Btn>}
@@ -151,6 +152,10 @@ export default function CustomerDetail() {
                       <Td className="whitespace-nowrap text-xs">{fmtDate(p.start_date)} →<br />{fmtDate(p.end_date)}</Td>
                       <Td><div className="flex flex-col items-start gap-1"><StatusBadge status={p.status} /><ExpiryBadge days={p.days_to_expiry} status={p.status} /></div></Td>
                       <Td className="text-right whitespace-nowrap">
+                        {["active", "expired", "lapsed"].includes(p.status) && (
+                          <WhatsAppButton variant="icon" className="align-middle mr-1" person={{ type: "customer", id: c.id, name: c.name, phone: c.phone }}
+                            policies={policies} claims={claims} policyId={p.id} template={p.days_to_expiry < 0 ? "expired" : "renewal"} onSent={load} />
+                        )}
                         {["active", "expired", "lapsed"].includes(p.status) && (
                           <Btn variant="ghost" className="px-2 py-1" onClick={() => setRenew(p)}>Renew</Btn>
                         )}

@@ -38,6 +38,13 @@ On first start the backend creates an admin user if none exists:
 
 Change the password after first login (Settings). Also set a strong `JWT_SECRET` in `backend/.env`.
 
+### WhatsApp buttons
+The green WhatsApp symbol on customers, leads, renewals, the dashboard and tasks opens a composer with ready-made
+messages (renewal reminder, policy expired, policy issued, claim update, documents needed, birthday wishes, free
+policy review, follow-up) in English or Tamil, with an IRDAI signature. The message can be edited, then opens in
+**WhatsApp Web** on a computer (the WhatsApp app on a phone) for you to press send — nothing is sent automatically.
+Each one is noted on the customer's or lead's activity timeline.
+
 ### Automatic WhatsApp renewal reminders
 Settings → *Automatic WhatsApp renewal reminders*. Once switched on, the backend checks every 15 minutes and,
 after the chosen hour (IST), sends one reminder per policy per schedule step (default 30, 15, 7 and 1 day before
