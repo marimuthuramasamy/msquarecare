@@ -7,6 +7,19 @@ import { PolicyForm, RenewForm } from "../forms";
 import { Btn, Card, ExpiryBadge, Input, PageHeader, Select, StatusBadge, Table, Td } from "../ui";
 import { POLICY_STATUSES, POLICY_TYPES, fmtDate, inr } from "../utils";
 
+// ISO YYYY-MM-DD dates sort correctly as strings; missing dates go last. Ties fall back to customer name.
+const byName = (a, b) => (a.customer_name || "").localeCompare(b.customer_name || "");
+const byDate = (key, dir) => (a, b) => {
+  if (!a[key] !== !b[key]) return a[key] ? -1 : 1;
+  return dir * (a[key] || "").localeCompare(b[key] || "") || byName(a, b);
+};
+const SORTS = {
+  start_asc: { label: "Start date — earliest first", cmp: byDate("start_date", 1) },
+  start_desc: { label: "Start date — latest first", cmp: byDate("start_date", -1) },
+  end_asc: { label: "Expiry — soonest first", cmp: byDate("end_date", 1) },
+  name_asc: { label: "Customer name A–Z", cmp: (a, b) => byName(a, b) || byDate("start_date", 1)(a, b) },
+};
+
 export default function Policies() {
   const [params, setParams] = useSearchParams();
   const [rows, setRows] = useState([]);
@@ -15,6 +28,7 @@ export default function Policies() {
   const [status, setStatus] = useState("active");
   const [form, setForm] = useState({ open: params.get("new") === "1", policy: null });
   const [renew, setRenew] = useState(null);
+  const [sort, setSort] = useState("start_asc");
 
   const load = useCallback(() => {
     crm.get("/policies", { params: { status: status || undefined, policy_type: type || undefined } })
@@ -24,7 +38,8 @@ export default function Policies() {
 
   const ql = q.toLowerCase();
   const filtered = rows.filter((p) => !ql ||
-    [p.policy_number, p.insurer, p.plan_name, p.customer_name, p.customer_phone, p.vehicle_number].join(" ").toLowerCase().includes(ql));
+    [p.policy_number, p.insurer, p.plan_name, p.customer_name, p.customer_phone, p.vehicle_number].join(" ").toLowerCase().includes(ql))
+    .sort(SORTS[sort].cmp);
   const premium = filtered.reduce((a, p) => a + Number(p.premium || 0), 0);
   const comm = filtered.reduce((a, p) => a + Number(p.commission_amount || 0), 0);
 
@@ -47,9 +62,11 @@ export default function Policies() {
         </div>
         <Select value={type} onChange={setType} placeholder="All types" options={POLICY_TYPES.map((t) => ({ value: t, label: t }))} className="w-40" />
         <Select value={status} onChange={setStatus} placeholder="All statuses" options={POLICY_STATUSES} className="w-40" />
+        <Select value={sort} onChange={setSort} aria-label="Sort policies" data-testid="policy-sort"
+          options={Object.entries(SORTS).map(([value, o]) => ({ value, label: `Sort: ${o.label}` }))} className="w-auto sm:ml-auto" />
       </div>
       <Card>
-        <Table head={["Policy", "Customer", "Type", { label: "Premium", className: "text-right" }, { label: "Commission", className: "text-right" }, "Ends", "Status", ""]} empty="No policies match.">
+        <Table head={["Policy", "Customer", "Type", { label: "Premium", className: "text-right" }, { label: "Commission", className: "text-right" }, "Starts", "Ends", "Status", ""]} empty="No policies match.">
           {filtered.map((p) => (
             <tr key={p.id} className="hover:bg-slate-50">
               <Td><div className="font-medium text-slate-800">{p.policy_number}</div><div className="text-xs text-slate-500">{p.insurer}{p.plan_name ? ` · ${p.plan_name}` : ""}</div></Td>
@@ -57,6 +74,7 @@ export default function Policies() {
               <Td>{p.policy_type}{p.vehicle_number && <div className="text-xs text-slate-500">{p.vehicle_number}</div>}</Td>
               <Td className="text-right tabular-nums">{inr(p.premium)}</Td>
               <Td className="text-right tabular-nums text-slate-600">{p.commission_amount ? inr(p.commission_amount) : "—"}</Td>
+              <Td className="whitespace-nowrap">{fmtDate(p.start_date)}</Td>
               <Td className="whitespace-nowrap">{fmtDate(p.end_date)}<div><ExpiryBadge days={p.days_to_expiry} status={p.status} /></div></Td>
               <Td><StatusBadge status={p.status} /></Td>
               <Td className="text-right whitespace-nowrap">

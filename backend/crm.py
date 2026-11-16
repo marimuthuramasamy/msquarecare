@@ -1006,6 +1006,7 @@ async def export(kind: Literal["leads", "customers", "policies", "claims"], user
         cols = ["name", "phone", "email", "city", "address", "dob", "pan", "created_at"]
     elif kind == "policies":
         rows = await list_policies(status=None, policy_type=None, customer_id=None, q=None, expiring_within=None, _=user)
+        rows.sort(key=lambda r: (r.get("start_date") or "9999-12-31", r.get("customer_name") or ""))
         cols = ["policy_number", "customer_name", "customer_phone", "insurer", "policy_type", "plan_name",
                 "sum_insured", "premium", "commission_pct", "commission_amount", "start_date", "end_date", "status"]
     else:

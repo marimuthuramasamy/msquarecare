@@ -145,3 +145,13 @@ def test_portal(client):
     assert len(client.get("/api/crm/claims").json()) == 1
     tasks = client.get("/api/crm/tasks").json()
     assert len(tasks) == 1 and "Claim intimation" in tasks[0]["title"]
+
+
+def test_policy_export_sorted_by_start_date(client):
+    late = client.post("/api/crm/customers", json={"name": "Zara", "phone": "9000000011"}).json()
+    early = client.post("/api/crm/customers", json={"name": "Anbu", "phone": "9000000012"}).json()
+    for cust, num, start in [(late, "H-LATE", d(-10)), (early, "H-EARLY", d(-300))]:
+        client.post("/api/crm/policies", json={"customer_id": cust["id"], "policy_number": num, "insurer": "Star Health",
+                                               "policy_type": "Health", "start_date": start, "end_date": d(400)})
+    lines = client.get("/api/crm/export/policies").text.splitlines()
+    assert lines[1].startswith("H-EARLY") and lines[2].startswith("H-LATE")
