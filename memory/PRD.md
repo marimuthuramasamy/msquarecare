@@ -46,3 +46,4 @@ Tagline: "One Square. Every Solution." Consultant: Marimuthu R. Phone 8072571879
 - Legacy `/api/admin/*` passcode endpoints still work; integrations endpoints accept the passcode or an admin bearer token.
 - Tests: `backend/tests/test_crm.py` (mongomock). Demo data: `backend/seed_demo.py`.
 - WhatsApp renewal reminders (`backend/reminders.py`, `/api/crm/reminders/*`): scheduler started on app startup; stages per policy deduped via unique `reminders.key`; modes `manual` (queued wa.me links) or `api` (Meta Cloud API template). Tests: `backend/tests/test_reminders.py`.
+- Daily diary (`/crm/diary`, `/api/crm/diary`): one private page per user per day (unique user_id+date), starred flag, linked customers/leads, search. Emptied pages are deleted.

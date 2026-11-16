@@ -10,6 +10,7 @@ import Policies from "@/crm/pages/Policies";
 import Renewals from "@/crm/pages/Renewals";
 import Claims from "@/crm/pages/Claims";
 import Tasks from "@/crm/pages/Tasks";
+import Diary from "@/crm/pages/Diary";
 import Settings from "@/crm/pages/Settings";
 
 export default function CrmApp() {
@@ -26,6 +27,7 @@ export default function CrmApp() {
           <Route path="renewals" element={<Renewals />} />
           <Route path="claims" element={<Claims />} />
           <Route path="tasks" element={<Tasks />} />
+          <Route path="diary" element={<Diary />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/crm" replace />} />
         </Route>

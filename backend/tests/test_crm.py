@@ -156,3 +156,31 @@ def test_policy_export_sorted_by_start_date(client):
                                                "policy_type": "Health", "start_date": start, "end_date": d(400)})
     lines = client.get("/api/crm/export/policies").text.splitlines()
     assert lines[1].startswith("H-EARLY") and lines[2].startswith("H-LATE")
+
+
+def test_diary(client):
+    today = d(0)
+    assert client.get(f"/api/crm/diary/{today}").json() == {"date": today, "text": "", "starred": False,
+                                                            "links": [], "updated_at": None}
+    assert client.get("/api/crm/diary/2026-13-01").status_code == 400
+    lead = client.post("/api/crm/leads", json={"name": "Revathi", "phone": "9000000021"}).json()
+    page = client.put(f"/api/crm/diary/{today}", json={
+        "text": "10:30 Revathi called, worried about waiting period. Send Star comparison.",
+        "starred": True, "links": [{"type": "lead", "id": lead["lead_id"], "name": "Revathi"}]}).json()
+    assert page["starred"] and page["updated_at"]
+    # saving again updates the same page instead of creating a second one
+    client.put(f"/api/crm/diary/{today}", json={"text": "Updated note", "starred": True,
+                                               "links": page["links"]})
+    client.put(f"/api/crm/diary/{d(-1)}", json={"text": "Quiet day, renewals only"})
+    days = client.get("/api/crm/diary").json()
+    assert [x["date"] for x in days] == [today, d(-1)] and days[0]["snippet"] == "Updated note"
+    assert len(client.get("/api/crm/diary?starred=true").json()) == 1
+    assert len(client.get("/api/crm/diary?q=revathi").json()) == 1  # matches a linked name
+    assert len(client.get(f"/api/crm/diary?link_id={lead['lead_id']}").json()) == 1
+    # pages are private to their writer
+    client.post("/api/crm/users", json={"name": "Ravi", "email": "ravi@test.com", "password": "agent123"})
+    tok = client.post("/api/crm/auth/login", json={"email": "ravi@test.com", "password": "agent123"}).json()["token"]
+    assert client.get("/api/crm/diary", headers={"Authorization": f"Bearer {tok}"}).json() == []
+    # clearing a page removes it from the list
+    client.put(f"/api/crm/diary/{d(-1)}", json={"text": "  "})
+    assert [x["date"] for x in client.get("/api/crm/diary").json()] == [today]
