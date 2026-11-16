@@ -25,6 +25,8 @@ export default function About() {
             <img
               src="https://images.pexels.com/photos/5816284/pexels-photo-5816284.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
               alt="Reviewing financial reports"
+              loading="lazy"
+              decoding="async"
               className="w-full h-[420px] object-cover"
             />
           </div>

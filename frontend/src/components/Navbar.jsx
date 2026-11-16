@@ -5,6 +5,7 @@ import { BrandHeader } from "./Logo";
 
 const links = [
   { label: "Services", href: "#services" },
+  { label: "Cover Compass", href: "#compass" },
   { label: "AI Analyzer", href: "#analyzer" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
@@ -17,7 +18,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -59,6 +61,8 @@ export default function Navbar() {
           onClick={() => setOpen((o) => !o)}
           data-testid="mobile-menu-toggle"
           aria-label="Toggle menu"
+          aria-expanded={open}
+          aria-controls="mobile-menu"
         >
           {open ? <X size={26} /> : <List size={26} />}
         </button>
@@ -69,6 +73,7 @@ export default function Navbar() {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           className="md:hidden bg-white border-t border-navy/10 overflow-hidden"
+          id="mobile-menu"
           data-testid="mobile-menu"
         >
           <div className="px-5 py-4 flex flex-col gap-3">

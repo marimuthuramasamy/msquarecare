@@ -99,8 +99,12 @@ export default function Hero() {
             className="relative rounded-2xl overflow-hidden border border-navy/10 shadow-xl"
           >
             <img
-              src="https://images.unsplash.com/photo-1758518730037-a16581a040e8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwzfHxmaW5hbmNlJTIwY29uc3VsdGluZyUyMG1vZGVybnxlbnwwfHx8fDE3ODczNzIwMTd8MA&ixlib=rb-4.1.0&q=85"
+              src="https://images.unsplash.com/photo-1758518730037-a16581a040e8?w=1200&crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwzfHxmaW5hbmNlJTIwY29uc3VsdGluZyUyMG1vZGVybnxlbnwwfHx8fDE3ODczNzIwMTd8MA&ixlib=rb-4.1.0&q=85"
               alt="MSquare Care advisory meeting"
+              width="1200"
+              height="800"
+              fetchpriority="high"
+              decoding="async"
               className="w-full h-[380px] lg:h-[460px] object-cover"
             />
           </motion.div>

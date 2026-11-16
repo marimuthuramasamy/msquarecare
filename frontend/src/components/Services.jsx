@@ -37,7 +37,7 @@ const services = [
     title: "Term / Life Insurance",
     desc: "High-cover term & life plans that secure your family's future.",
     span: "lg:col-span-4",
-    img: "https://images.unsplash.com/photo-1648221350871-e3ae3c8d0f58?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwzfHxmYW1pbHklMjBwcm90ZWN0aW9ufGVufDB8fHx8MTc4NzM3MjAxN3ww&ixlib=rb-4.1.0&q=85",
+    img: "https://images.unsplash.com/photo-1648221350871-e3ae3c8d0f58?w=940&crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwzfHxmYW1pbHklMjBwcm90ZWN0aW9ufGVufDB8fHx8MTc4NzM3MjAxN3ww&ixlib=rb-4.1.0&q=85",
   },
   {
     icon: CurrencyInr,
@@ -101,7 +101,7 @@ export default function Services() {
               >
                 {s.img && (
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <img src={s.img} alt={s.title} className="h-full w-full object-cover" />
+                    <img src={s.img} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-navy/80" />
                   </div>
                 )}
