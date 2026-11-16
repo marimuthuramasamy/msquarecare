@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ArrowLeft, Phone, WhatsappLogo, EnvelopeSimple, PencilSimple, Trash, CheckCircle, Circle,
+  ArrowLeft, Phone, WhatsappLogo, EnvelopeSimple, PencilSimple, Trash, CheckCircle, Circle, NotePencil, Star,
 } from "@phosphor-icons/react";
 import { crm, errMsg } from "../api";
 import { useAuth } from "../AuthContext";
@@ -12,6 +12,52 @@ import {
   ActivityComposer, Btn, Card, ExpiryBadge, PageHeader, Pill, StatusBadge, Table, Td, Timeline,
 } from "../ui";
 import { fmtDate, inr, label, waTo } from "../utils";
+
+const diaryDate = (iso) =>
+  new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+
+// The signed-in user's diary pages that link this customer (or the lead they came from).
+function DiaryNotes({ customer }) {
+  const [notes, setNotes] = useState(null);
+  const [open, setOpen] = useState({});
+  useEffect(() => {
+    const qs = new URLSearchParams({ limit: "100" });
+    [customer.id, customer.lead_id].filter(Boolean).forEach((x) => qs.append("link_id", x));
+    crm.get(`/diary?${qs}`).then((r) => setNotes(r.data)).catch(() => setNotes([]));
+  }, [customer.id, customer.lead_id]);
+  const todayLink = `/crm/diary?${new URLSearchParams({ link: `customer:${customer.id}`, name: customer.name })}`;
+  return (
+    <Card className="p-5" data-testid="customer-diary">
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <h3 className="font-display font-semibold text-navy">Your diary notes</h3>
+        <Link to={todayLink}><Btn variant="ghost" className="px-2 py-1 text-xs" data-testid="customer-diary-write"><NotePencil size={15} /> Write today</Btn></Link>
+      </div>
+      <p className="text-[11px] text-slate-400 mb-3">Diary pages where you linked {customer.name.split(" ")[0]}. Only you see these.</p>
+      {notes === null ? (
+        <p className="text-sm text-slate-400">Loading…</p>
+      ) : notes.length === 0 ? (
+        <p className="text-sm text-slate-400">No diary notes yet. Use “Write today” or link this customer from the Diary.</p>
+      ) : (
+        <ul className="space-y-3">
+          {notes.map((n) => (
+            <li key={n.date} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <Link to={`/crm/diary?date=${n.date}`} className="text-sm font-semibold text-navy hover:underline">{diaryDate(n.date)}</Link>
+                {n.starred && <Star size={14} weight="fill" className="text-amber-500" aria-label="Starred" />}
+              </div>
+              <p className={`mt-1 text-sm text-slate-700 whitespace-pre-wrap break-words ${open[n.date] ? "" : "line-clamp-4"}`}>{n.text || "—"}</p>
+              {(n.text || "").split("\n").length > 4 || (n.text || "").length > 240 ? (
+                <button onClick={() => setOpen((o) => ({ ...o, [n.date]: !o[n.date] }))} className="mt-1 text-xs font-semibold text-navy hover:underline">
+                  {open[n.date] ? "Show less" : "Show more"}
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -161,6 +207,7 @@ export default function CustomerDetail() {
               ))}
             </dl>
           </Card>
+          <DiaryNotes customer={c} />
           <Card className="p-5">
             <h3 className="font-display font-semibold text-navy mb-3">Activity</h3>
             <ActivityComposer entityType="customer" entityId={c.id} onAdded={load} />

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
 import {
   CaretLeft, CaretRight, Star, MagnifyingGlass, Clock, X, UserPlus, CheckCircle, CircleNotch,
@@ -64,8 +64,16 @@ function LinkPicker({ people, existing, onPick }) {
   );
 }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
 export default function Diary() {
-  const [day, setDay] = useState(isoToday());
+  // Deep links: ?date=YYYY-MM-DD opens that day; ?link=customer:<id>&name=<name> also links that person
+  const [params, setParams] = useSearchParams();
+  const [day, setDay] = useState(() => (ISO_DAY.test(params.get("date") || "") ? params.get("date") : isoToday()));
+  const linkRequest = useRef((() => {
+    const [type, id] = (params.get("link") || "").split(":");
+    return ["customer", "lead"].includes(type) && id ? { type, id, name: params.get("name") || "Customer" } : null;
+  })());
   const [page, setPage] = useState({ text: "", starred: false, links: [] });
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | dirty | saving | saved
@@ -139,6 +147,19 @@ export default function Diary() {
     }).catch((e) => toast.error(errMsg(e)));
     return () => { alive = false; };
   }, [day]);
+
+  // Apply a requested link once the target day's page has loaded, then tidy the URL.
+  useEffect(() => {
+    const req = linkRequest.current;
+    if (!loaded || !req) return;
+    linkRequest.current = null;
+    if (!page.links.some((l) => l.id === req.id)) update({ links: [...page.links, req] });
+    setParams({}, { replace: true });
+  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (params.get("date") && !params.get("link")) setParams({}, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const update = (patch) => {
     setPage((old) => {
