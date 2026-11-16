@@ -9,6 +9,7 @@ const links = [
   { label: "AI Analyzer", href: "#analyzer" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
+  { label: "My Policy", href: "/my-policy" },
 ];
 
 export default function Navbar() {
