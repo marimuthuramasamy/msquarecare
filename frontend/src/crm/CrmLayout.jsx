@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, Link } from "react-router-dom";
 import {
-  SquaresFour, Funnel, AddressBook, ShieldCheck, ArrowsClockwise, FirstAid, CheckSquare, Gear, SignOut, List, X, Globe,
+  SquaresFour, Funnel, AddressBook, ShieldCheck, ArrowsClockwise, FirstAid, CheckSquare, NotePencil, Gear, SignOut, List, X, Globe,
 } from "@phosphor-icons/react";
 import { useAuth } from "./AuthContext";
 
@@ -13,6 +13,7 @@ const NAV = [
   { to: "/crm/renewals", label: "Renewals", icon: ArrowsClockwise },
   { to: "/crm/claims", label: "Claims", icon: FirstAid },
   { to: "/crm/tasks", label: "Tasks", icon: CheckSquare },
+  { to: "/crm/diary", label: "Diary", icon: NotePencil },
   { to: "/crm/settings", label: "Settings", icon: Gear },
 ];
 

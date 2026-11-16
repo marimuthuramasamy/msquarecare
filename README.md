@@ -19,6 +19,7 @@ insurance CRM for the team and a self-service portal for customers.
 - **Renewals** – policies expiring in 15/30/60/90 days, WhatsApp reminder with pre-filled message, one-click **renew** (creates the next term and closes the old one), auto-create renewal follow-up tasks.
 - **Claims** – intimation → documents → submitted → review → approved/settled/rejected, with status history.
 - **Tasks** – overdue / today / upcoming follow-ups per user.
+- **Diary** – a private page per day for jotting down how customer and lead conversations went: autosaves, "+ time" stamps, star important days, link the customers/leads mentioned, search past days.
 - **Settings** – team users (admin / agent roles), password change, Google Sheets sync & email alerts, CSV exports.
 
 ## Running

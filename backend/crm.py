@@ -160,6 +160,10 @@ async def bootstrap(database):
                 await d[coll].create_index(k)
             except Exception as e:  # mongomock / permissions — never fatal
                 logger.debug(f"index {coll}.{k}: {e}")
+    try:
+        await d.diary.create_index([("user_id", 1), ("date", 1)], unique=True)
+    except Exception as e:
+        logger.debug(f"index diary: {e}")
     if await d.users.count_documents({}) == 0:
         email = (os.environ.get("CRM_ADMIN_EMAIL") or os.environ.get("COMPANY_EMAIL")
                  or "admin@msquarecare.com").lower()
@@ -904,6 +908,73 @@ async def delete_task(task_id: str, _: dict = Depends(current_user)):
     if not res.deleted_count:
         raise HTTPException(status_code=404, detail="Task not found")
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- diary
+# A private daily notebook: one page per user per day, for jotting down how
+# conversations with customers and leads went. Pages can be starred and can
+# link the customers/leads they mention.
+DIARY_MAX_CHARS = 20000
+
+
+class DiaryLink(BaseModel):
+    type: Literal["customer", "lead"]
+    id: str
+    name: str
+
+
+class DiaryIn(BaseModel):
+    text: str = Field("", max_length=DIARY_MAX_CHARS)
+    starred: bool = False
+    links: List[DiaryLink] = Field(default_factory=list, max_length=50)
+
+
+def _diary_date(day: str) -> str:
+    d = _parse_date(day)
+    if not d or len(day) != 10:
+        raise HTTPException(status_code=400, detail="Date must be YYYY-MM-DD")
+    return d.isoformat()
+
+
+def _diary_out(doc: Optional[dict], day: str) -> dict:
+    if not doc:
+        return {"date": day, "text": "", "starred": False, "links": [], "updated_at": None}
+    return {k: doc.get(k) for k in ("date", "text", "starred", "links", "updated_at")}
+
+
+@router.get("/diary")
+async def list_diary(q: Optional[str] = None, starred: bool = False, link_id: Optional[str] = None,
+                     limit: int = Query(60, ge=1, le=500), user: dict = Depends(current_user)):
+    filt: dict = {"user_id": user["id"]}
+    if starred:
+        filt["starred"] = True
+    if link_id:
+        filt["links.id"] = link_id
+    if q:
+        rx = {"$regex": re.escape(q), "$options": "i"}
+        filt["$or"] = [{"text": rx}, {"links.name": rx}]
+    docs = await db().diary.find(filt).sort("date", -1).to_list(limit)
+    return [dict(_diary_out(d, d["date"]), snippet=(d.get("text") or "").strip()[:160]) for d in docs]
+
+
+@router.get("/diary/{day}")
+async def get_diary(day: str, user: dict = Depends(current_user)):
+    day = _diary_date(day)
+    return _diary_out(await db().diary.find_one({"user_id": user["id"], "date": day}), day)
+
+
+@router.put("/diary/{day}")
+async def save_diary(day: str, body: DiaryIn, user: dict = Depends(current_user)):
+    day = _diary_date(day)
+    key = {"user_id": user["id"], "date": day}
+    # an emptied page is removed so the list only shows days with something written
+    if not body.text.strip() and not body.starred and not body.links:
+        await db().diary.delete_one(key)
+        return _diary_out(None, day)
+    upd = dict(body.model_dump(), updated_at=now_iso())
+    await db().diary.update_one(key, {"$set": upd, "$setOnInsert": {"id": new_id(), "created_at": now_iso()}},
+                                upsert=True)
+    return _diary_out(await db().diary.find_one(key), day)
 
 
 # ---------------------------------------------------------------- dashboard
