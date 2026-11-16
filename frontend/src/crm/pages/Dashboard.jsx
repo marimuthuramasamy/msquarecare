@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
-  Funnel, AddressBook, ShieldCheck, ArrowsClockwise, FirstAid, CheckSquare, CurrencyInr, WhatsappLogo,
+  Funnel, AddressBook, ShieldCheck, ArrowsClockwise, FirstAid, CheckSquare, CurrencyInr,
 } from "@phosphor-icons/react";
 import { crm } from "../api";
 import { useAuth } from "../AuthContext";
 import { Card, ExpiryBadge, PageHeader, Stat, Btn, Empty } from "../ui";
-import { inr, fmtDate, label, waTo } from "../utils";
+import { inr, fmtDate, label } from "../utils";
+import { WhatsAppButton } from "../WhatsApp";
 
 const STAGE_COLOR = "#1a2f6b";
 
@@ -122,13 +123,8 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold tabular-nums text-slate-700">{inr(p.premium)}</span>
                     <ExpiryBadge days={p.days_to_expiry} status={p.status} />
-                    <a
-                      href={waTo(p.customer_phone, `Hi ${p.customer_name}, this is MSquare Care. Your ${p.policy_type} policy ${p.policy_number} with ${p.insurer} is due for renewal on ${fmtDate(p.end_date)}. Shall we renew it for you?`)}
-                      target="_blank" rel="noreferrer" title="Send WhatsApp reminder"
-                      className="text-brand-green hover:text-brand-greenDark"
-                    >
-                      <WhatsappLogo size={22} weight="fill" />
-                    </a>
+                    <WhatsAppButton variant="icon" person={{ type: "customer", id: p.customer_id, name: p.customer_name, phone: p.customer_phone }}
+                      policies={[p]} policyId={p.id} template={p.days_to_expiry < 0 ? "expired" : "renewal"} />
                   </div>
                 </li>
               ))}

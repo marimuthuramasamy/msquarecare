@@ -5,13 +5,14 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import {
-  MagnifyingGlass, Kanban, Rows, Phone, WhatsappLogo, UserPlus, PencilSimple, Trash, DownloadSimple, CalendarBlank,
+  MagnifyingGlass, Kanban, Rows, Phone, UserPlus, PencilSimple, Trash, DownloadSimple, CalendarBlank,
 } from "@phosphor-icons/react";
 import { crm, errMsg, downloadCsv } from "../api";
 import { useAuth } from "../AuthContext";
 import { LeadForm, TaskForm } from "../forms";
 import { ActivityComposer, Btn, Card, Input, PageHeader, Select, StatusBadge, Table, Td, Timeline } from "../ui";
-import { LEAD_STAGES, fmtDate, inr, isoToday, label, waTo } from "../utils";
+import { LEAD_STAGES, fmtDate, inr, isoToday, label } from "../utils";
+import { WhatsAppButton } from "../WhatsApp";
 
 function LeadPanel({ lead, onClose, onChanged }) {
   const { userName, user } = useAuth();
@@ -67,9 +68,8 @@ function LeadPanel({ lead, onClose, onChanged }) {
 
         <div className="mt-4 flex flex-wrap gap-2">
           <a href={`tel:${lead.phone}`}><Btn variant="outline"><Phone size={16} /> Call</Btn></a>
-          <a href={waTo(lead.phone, `Hi ${lead.name}, this is MSquare Care Solutions regarding your ${lead.service} enquiry.`)} target="_blank" rel="noreferrer">
-            <Btn variant="outline"><WhatsappLogo size={16} /> WhatsApp</Btn>
-          </a>
+          <WhatsAppButton person={{ type: "lead", id: lead.lead_id, name: lead.name, phone: lead.phone, service: lead.service }}
+            template={lead.status === "new" ? "review" : "followup"} onSent={loadActs} />
           <Btn variant="outline" onClick={() => setEdit(true)}><PencilSimple size={16} /> Edit</Btn>
           <Btn variant="outline" onClick={() => setTaskOpen(true)}><CalendarBlank size={16} /> Follow-up</Btn>
           {lead.customer_id ? (

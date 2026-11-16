@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { crm, errMsg } from "../api";
 import { RenewForm } from "../forms";
 import { Btn, Card, ExpiryBadge, PageHeader, Pill, Select, StatusBadge, Table, Td } from "../ui";
-import { fmtDate, fmtDateTime, inr, waTo } from "../utils";
+import { WA_TARGET, fmtDate, fmtDateTime, inr, waTo } from "../utils";
+import { WhatsAppButton } from "../WhatsApp";
 
 const REM_TONE = { pending: "amber", sent: "green", failed: "red", skipped: "slate", sending: "blue" };
 const stageText = (n) => (n > 0 ? `${n}d before` : n === 0 ? "expiry day" : `${-n}d after`);
@@ -58,7 +59,7 @@ function ReminderQueue({ onCount }) {
             <Td className="text-right whitespace-nowrap">
               {["pending", "failed"].includes(r.status) && (
                 <div className="flex justify-end gap-1.5">
-                  <a href={r.wa_link || waTo(r.customer_phone, r.message)} target="_blank" rel="noreferrer">
+                  <a href={waTo(r.customer_phone, r.message)} target={WA_TARGET} rel="noreferrer">
                     <Btn variant="green" className="px-2.5 py-1.5"><WhatsappLogo size={16} weight="fill" /> Open</Btn>
                   </a>
                   <Btn variant="outline" className="px-2.5 py-1.5" onClick={() => act(r, "mark-sent")} data-testid="reminder-mark-sent">Mark sent</Btn>
@@ -135,8 +136,8 @@ export default function Renewals() {
               <Td><StatusBadge status={p.status} /></Td>
               <Td>
                 <div className="flex items-center gap-3">
-                  <a href={waTo(p.customer_phone, `Hi ${p.customer_name}, this is MSquare Care Solutions. Your ${p.policy_type} policy ${p.policy_number} (${p.insurer}) ${p.days_to_expiry < 0 ? "expired" : "is due for renewal"} on ${fmtDate(p.end_date)}. Renewal premium is approx. ${inr(p.premium)}. Shall we go ahead and renew it?`)}
-                    target="_blank" rel="noreferrer" title="WhatsApp reminder" className="text-brand-green hover:text-brand-greenDark"><WhatsappLogo size={22} weight="fill" /></a>
+                  <WhatsAppButton variant="icon" person={{ type: "customer", id: p.customer_id, name: p.customer_name, phone: p.customer_phone }}
+                    policies={[p]} policyId={p.id} template={p.days_to_expiry < 0 ? "expired" : "renewal"} />
                   <a href={`tel:${p.customer_phone}`} title="Call" className="text-navy"><Phone size={20} /></a>
                 </div>
               </Td>

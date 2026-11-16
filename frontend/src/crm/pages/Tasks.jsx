@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "@/components/ui/sonner";
-import { CheckCircle, Circle, Trash, WhatsappLogo, PencilSimple } from "@phosphor-icons/react";
+import { CheckCircle, Circle, Trash, PencilSimple } from "@phosphor-icons/react";
 import { crm, errMsg } from "../api";
 import { useAuth } from "../AuthContext";
 import { TaskForm } from "../forms";
 import { Btn, Card, Empty, PageHeader, Pill, StatusBadge } from "../ui";
-import { fmtDate, isoToday, label, waTo } from "../utils";
+import { fmtDate, isoToday, label } from "../utils";
+import { WhatsAppButton } from "../WhatsApp";
 
 export default function Tasks() {
   const [rows, setRows] = useState([]);
@@ -86,7 +87,7 @@ export default function Tasks() {
                     <div className="flex items-center gap-2 shrink-0">
                       <StatusBadge status={t.priority} />
                       {t.customer_phone && (
-                        <a href={waTo(t.customer_phone, `Hi ${t.customer_name}, this is MSquare Care Solutions.`)} target="_blank" rel="noreferrer" className="text-brand-green" title="WhatsApp"><WhatsappLogo size={20} weight="fill" /></a>
+                        <WhatsAppButton variant="icon" person={{ type: "customer", id: t.customer_id, name: t.customer_name, phone: t.customer_phone }} />
                       )}
                       <button onClick={() => setForm({ open: true, task: t })} className="text-slate-400 hover:text-navy" title="Edit"><PencilSimple size={18} /></button>
                       <button onClick={() => remove(t)} className="text-slate-400 hover:text-red-600" title="Delete"><Trash size={18} /></button>
