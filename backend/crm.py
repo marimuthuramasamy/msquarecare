@@ -474,7 +474,9 @@ async def get_customer(cid: str, _: dict = Depends(current_user)):
     c = await db().customers.find_one({"id": cid})
     if not c:
         raise HTTPException(status_code=404, detail="Customer not found")
-    policies = await db().policies.find({"customer_id": cid}).sort("end_date", -1).to_list(500)
+    # earliest start date first, same order as the Policies page
+    policies = await db().policies.find({"customer_id": cid}).sort(
+        [("start_date", 1), ("policy_number", 1)]).to_list(500)
     claims = await db().claims.find({"customer_id": cid}).sort("created_at", -1).to_list(500)
     tasks = await db().tasks.find({"customer_id": cid}).sort("due_date", 1).to_list(500)
     ids = [cid] + [p["id"] for p in policies] + [cl["id"] for cl in claims]

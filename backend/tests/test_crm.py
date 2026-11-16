@@ -115,6 +115,7 @@ def test_full_lifecycle(client):
     # customer 360 includes everything and the activity timeline
     full = client.get(f"/api/crm/customers/{cust['id']}").json()
     assert len(full["policies"]) == 2 and len(full["claims"]) == 1
+    assert [p["start_date"] for p in full["policies"]] == [d(-355), d(11)]  # earliest start first
     assert any("Converted" in a["text"] for a in full["activities"])
 
     # cannot delete a policy with claims / a customer with policies
