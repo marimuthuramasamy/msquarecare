@@ -943,13 +943,15 @@ def _diary_out(doc: Optional[dict], day: str) -> dict:
 
 
 @router.get("/diary")
-async def list_diary(q: Optional[str] = None, starred: bool = False, link_id: Optional[str] = None,
+async def list_diary(q: Optional[str] = None, starred: bool = False,
+                     link_id: Optional[List[str]] = Query(None),
                      limit: int = Query(60, ge=1, le=500), user: dict = Depends(current_user)):
+    """`link_id` may repeat, e.g. a customer's id plus the lead it was converted from."""
     filt: dict = {"user_id": user["id"]}
     if starred:
         filt["starred"] = True
     if link_id:
-        filt["links.id"] = link_id
+        filt["links.id"] = {"$in": link_id}
     if q:
         rx = {"$regex": re.escape(q), "$options": "i"}
         filt["$or"] = [{"text": rx}, {"links.name": rx}]

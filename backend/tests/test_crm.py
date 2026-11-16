@@ -177,6 +177,13 @@ def test_diary(client):
     assert len(client.get("/api/crm/diary?starred=true").json()) == 1
     assert len(client.get("/api/crm/diary?q=revathi").json()) == 1  # matches a linked name
     assert len(client.get(f"/api/crm/diary?link_id={lead['lead_id']}").json()) == 1
+    # several ids at once, e.g. a customer plus the lead they were converted from
+    cust = client.post(f"/api/crm/leads/{lead['lead_id']}/convert").json()
+    client.put(f"/api/crm/diary/{d(-2)}", json={"text": "Policy issued", "links": [
+        {"type": "customer", "id": cust["id"], "name": "Revathi"}]})
+    both = client.get(f"/api/crm/diary?link_id={cust['id']}&link_id={lead['lead_id']}").json()
+    assert [x["date"] for x in both] == [today, d(-2)] and both[1]["text"] == "Policy issued"
+    client.put(f"/api/crm/diary/{d(-2)}", json={"text": ""})
     # pages are private to their writer
     client.post("/api/crm/users", json={"name": "Ravi", "email": "ravi@test.com", "password": "agent123"})
     tok = client.post("/api/crm/auth/login", json={"email": "ravi@test.com", "password": "agent123"}).json()["token"]
